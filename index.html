@@ -898,7 +898,10 @@
     score: null,
     name: "",
     whatsapp: "",
-    utm: {}
+    utm: {},
+    advancing: false,   // guards against double-tap skipping a question
+    submittingLead: false, // guards against duplicate Lead events / webhook posts
+    redirecting: false  // guards against duplicate InitiateCheckout events
   };
 
   /* ============================================================
@@ -982,6 +985,8 @@
   }
 
   function renderQuestion(){
+    state.advancing = false; // fresh question, fresh chance to advance
+
     var q = QUESTIONS[state.currentQuestion];
     document.getElementById("question-title").textContent = q.title;
 
@@ -1013,6 +1018,8 @@
         nextBtn.classList.remove("hidden");
       };
       nextBtn.onclick = function(){
+        if (state.advancing) return; // ignore double-taps
+        state.advancing = true;
         state.answers[q.key] = parseInt(sliderInput.value, 10);
         goToNextQuestion();
       };
@@ -1038,7 +1045,8 @@
         btn.appendChild(check);
 
         btn.addEventListener("click", function(){
-          if (btn.classList.contains("selected")) return; // ignore double-taps
+          if (state.advancing) return; // ignore double-taps — prevents skipping a question
+          state.advancing = true;
 
           state.answers[q.key] = opt.value;
           if (opt.leak) state.leak = opt.leak;
@@ -1157,6 +1165,8 @@
   }
 
   function handleRevealScore(){
+    if (state.submittingLead) return; // ignore double-taps — prevents duplicate Lead/webhook
+
     var nameInput = document.getElementById("input-name");
     var whatsappInput = document.getElementById("input-whatsapp");
     var nameError = document.getElementById("error-name");
@@ -1181,6 +1191,9 @@
     }
 
     if (!valid) return;
+
+    state.submittingLead = true;
+    document.getElementById("btn-reveal-score").disabled = true;
 
     state.name = name;
     state.whatsapp = whatsapp;
@@ -1268,6 +1281,9 @@
   }
 
   function handleCheckoutClick(){
+    if (state.redirecting) return; // ignore double-taps — prevents duplicate InitiateCheckout
+    state.redirecting = true;
+
     if (typeof fbq === "function" && PIXEL_ID && PIXEL_ID !== "YOUR_PIXEL_ID_HERE"){
       fbq('track', 'InitiateCheckout');
     }
