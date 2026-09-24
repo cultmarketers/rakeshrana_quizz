@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>The Leadership Capital Score</title>
+<meta name="description" content="Find your #1 Leadership Leak in under 3 minutes.">
+
+<!-- ============================================================
+     META PIXEL — replace PIXEL_ID below with your real Pixel ID
+     ============================================================ -->
+<script>
+  var PIXEL_ID = "YOUR_PIXEL_ID_HERE"; // <-- REPLACE BEFORE GOING LIVE
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  if (PIXEL_ID && PIXEL_ID !== "YOUR_PIXEL_ID_HERE") {
+    fbq('init', PIXEL_ID);
+    fbq('track', 'PageView');
+  }
+</script>
+
+<style>
+  /* ============================================================
+     BRAND / THEME — swap these CSS variables to re-skin the app
+     ============================================================ */
+  :root{
+    --bg: #0a0a0c;
+    --bg-elevated: #131318;
+    --bg-card: #16161d;
+    --border: #2a2a33;
+    --text-primary: #f5f4f0;
+    --text-secondary: #a8a6b3;
+    --text-muted: #6f6d7a;
+    --accent-gold: #c9a961;
+    --accent-gold-dim: #8a744a;
+    --accent-blue: #4a6fa5;
+    --success: #6fae7d;
+    --radius: 14px;
+    --radius-sm: 10px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --transition: 260ms cubic-bezier(.4,0,.2,1);
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  #app{
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .screen{
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    padding: 28px 22px 34px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity var(--transition), transform var(--transition);
+  }
+  .screen.active{
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .screen.exiting{
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  .screen-center{
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Typography */
+  .eyebrow{
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-gold);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  h1{
+    font-size: 30px;
+    line-height: 1.18;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+  }
+  h1 .sub{
+    display:block;
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 22px;
+    margin-top: 6px;
+  }
+  .body-text{
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+    margin-top: 16px;
+  }
+  .question-title{
+    font-size: 22px;
+    line-height: 1.3;
+    font-weight: 700;
+    margin-bottom: 22px;
+  }
+
+  /* Buttons */
+  .btn{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 18px 20px;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 120ms ease, opacity var(--transition), background var(--transition);
+    text-align: center;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:active{ transform: scale(0.98); }
+  .btn-primary{
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dim));
+    color: #14140f;
+    box-shadow: 0 8px 24px rgba(201,169,97,0.25);
+  }
+  .btn-primary:disabled{
+    opacity: 0.4;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+  .btn-block{ margin-top: 28px; }
+
+  /* Option buttons for quiz choices */
+  .options{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .option-btn{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+    padding: 18px 18px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition), transform 120ms ease;
+    min-height: 56px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .option-btn:active{ transform: scale(0.98); }
+  .option-btn.selected{
+    border-color: var(--accent-gold);
+    background: rgba(201,169,97,0.08);
+  }
+
+  /* Progress bar */
+  .progress-wrap{
+    padding: 18px 0 8px;
+  }
+  .progress-track{
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill{
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-gold-dim), var(--accent-gold));
+    border-radius: 2px;
+    transition: width 320ms ease;
+  }
+  .progress-label{
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    letter-spacing: 0.04em;
+  }
+
+  .quiz-body{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 12px;
+  }
+
+  /* Slider question */
+  .slider-wrap{
+    margin-top: 30px;
+  }
+  .slider-value{
+    font-size: 56px;
+    font-weight: 800;
+    color: var(--accent-gold);
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1;
+  }
+  input[type=range]{
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent-gold);
+    border: 3px solid var(--bg);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    cursor: pointer;
+  }
+  input[type=range]::-moz-range-thumb{
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent-gold);
+    border: 3px solid var(--bg);
+    cursor: pointer;
+  }
+  .slider-labels{
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 10px;
+  }
+
+  /* Loading screen */
+  .spinner{
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent-gold);
+    animation: spin 900ms linear infinite;
+    margin-bottom: 28px;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  .loading-text{
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .loading-subtext{
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 12px;
+    opacity: 0;
+    transition: opacity 500ms ease;
+  }
+  .loading-subtext.visible{ opacity: 1; }
+  .loading-bar-track{
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 24px;
+  }
+  .loading-bar-fill{
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent-gold-dim), var(--accent-gold));
+    transition: width 2.7s linear;
+  }
+
+  /* Form fields */
+  .field{
+    margin-top: 18px;
+  }
+  .field label{
+    display: block;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .field input{
+    width: 100%;
+    padding: 16px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 16px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color var(--transition);
+  }
+  .field input:focus{
+    border-color: var(--accent-gold);
+  }
+  .field-error{
+    font-size: 12px;
+    color: #d97373;
+    margin-top: 6px;
+    display: none;
+  }
+  .field-error.visible{ display: block; }
+
+  /* Result screen */
+  .score-badge{
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 3px solid var(--accent-gold);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 20px auto 24px;
+    box-shadow: 0 0 0 8px rgba(201,169,97,0.06);
+  }
+  .score-badge .num{
+    font-size: 40px;
+    font-weight: 800;
+    color: var(--accent-gold);
+    line-height: 1;
+  }
+  .score-badge .denom{
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+  .leak-tag{
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(201,169,97,0.12);
+    border: 1px solid var(--accent-gold-dim);
+    border-radius: 20px;
+    color: var(--accent-gold);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    margin-top: 4px;
+  }
+  .result-headline{
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-top: 18px;
+  }
+  .persona-card{
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-top: 22px;
+    text-align: left;
+  }
+  .persona-card .msg{
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-primary);
+  }
+  .persona-card .angle{
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    font-style: italic;
+  }
+  .cta-card{
+    background: linear-gradient(160deg, var(--bg-elevated), var(--bg-card));
+    border: 1px solid var(--accent-gold-dim);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-top: 20px;
+    text-align: left;
+  }
+  .cta-card .cta-text{
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-primary);
+  }
+
+  .footer-note{
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 16px;
+  }
+
+  /* Utility */
+  .grow{ flex: 1; }
+  .hidden{ display: none !important; }
+
+  @media (max-width: 360px){
+    h1{ font-size: 26px; }
+    .question-title{ font-size: 19px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ============================================================
+       SCREEN 1 — HOOK
+       ============================================================ -->
+  <section class="screen screen-center active" id="screen-hook">
+    <div class="eyebrow">Executive Leaders & Risers Club</div>
+    <h1 id="hook-headline"></h1>
+    <p class="body-text" id="hook-body"></p>
+    <button class="btn btn-primary btn-block" id="btn-hook-start"></button>
+  </section>
+
+  <!-- ============================================================
+       SCREEN 2 — QUIZ INTRO
+       ============================================================ -->
+  <section class="screen screen-center" id="screen-intro">
+    <h1 id="intro-headline"></h1>
+    <p class="body-text" id="intro-body"></p>
+    <button class="btn btn-primary btn-block" id="btn-intro-start"></button>
+  </section>
+
+  <!-- ============================================================
+       SCREEN 3 — QUIZ QUESTIONS
+       ============================================================ -->
+  <section class="screen" id="screen-quiz">
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-label" id="progress-label">Question 1 of 9</div>
+    </div>
+    <div class="quiz-body">
+      <div class="question-title" id="question-title"></div>
+      <div class="options" id="question-options"></div>
+
+      <!-- slider question markup (shown only for Q6) -->
+      <div class="slider-wrap hidden" id="slider-wrap">
+        <div class="slider-value" id="slider-value">5</div>
+        <input type="range" min="1" max="10" value="5" id="slider-input">
+        <div class="slider-labels"><span>Not confident</span><span>Extremely confident</span></div>
+        <button class="btn btn-primary btn-block hidden" id="btn-slider-next">Next</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCREEN 4 — LOADING
+       ============================================================ -->
+  <section class="screen screen-center" id="screen-loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Calculating your Leadership Capital Score...</div>
+    <div class="loading-subtext" id="loading-subtext">Comparing your answers against 75,000+ professionals who've taken this assessment.</div>
+    <div class="loading-bar-track"><div class="loading-bar-fill" id="loading-bar-fill"></div></div>
+  </section>
+
+  <!-- ============================================================
+       SCREEN 5 — LEAD CAPTURE GATE
+       ============================================================ -->
+  <section class="screen screen-center" id="screen-leadgate">
+    <h1 id="leadgate-headline"></h1>
+    <p class="body-text" id="leadgate-body"></p>
+
+    <div style="width:100%;">
+      <div class="field">
+        <label for="input-name">Full Name</label>
+        <input type="text" id="input-name" placeholder="e.g. Priya Sharma" autocomplete="name">
+        <div class="field-error" id="error-name">Please enter your name.</div>
+      </div>
+      <div class="field">
+        <label for="input-whatsapp">WhatsApp Number</label>
+        <input type="tel" id="input-whatsapp" placeholder="e.g. 98765 43210" autocomplete="tel" inputmode="tel">
+        <div class="field-error" id="error-whatsapp">Please enter a valid 10-digit Indian mobile number.</div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-block" id="btn-reveal-score">Reveal My Score</button>
+    <div class="footer-note">Your information is confidential and never shared.</div>
+  </section>
+
+  <!-- ============================================================
+       SCREEN 6 — RESULT
+       ============================================================ -->
+  <section class="screen" id="screen-result">
+    <div style="text-align:center;">
+      <div class="score-badge">
+        <div class="num" id="result-score">0</div>
+        <div class="denom">OUT OF 100</div>
+      </div>
+      <div class="leak-tag" id="result-leak-tag"></div>
+      <div class="result-headline" id="result-headline"></div>
+    </div>
+
+    <div class="persona-card">
+      <div class="msg" id="persona-message"></div>
+      <div class="angle" id="persona-angle"></div>
+    </div>
+
+    <div class="cta-card">
+      <div class="cta-text" id="cta-text"></div>
+      <button class="btn btn-primary btn-block" id="btn-checkout"></button>
+    </div>
+
+    <div class="footer-note">Limited seats per session — hosted live by Rakesh Rana.</div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     CONFIGURATION — edit placeholders here before going live
+     ============================================================ */
+  var WEBHOOK_URL = "https://connect.pabbly.com/workflow/sendwebhookdata/YOUR_WEBHOOK_ID_HERE"; // <-- REPLACE: Pabbly Connect webhook
+  var CHECKOUT_URL = "https://learn.risers.club/web/checkout/6a0bfadd1f111762e033a96c"; // <-- Checkout redirect
+  // PIXEL_ID is declared in <head> above — replace it there.
+
+  // Pick "1" or "3" to A/B test manually. Auto-selection by urgency happens below;
+  // set FORCE_CTA_VARIANT to "1" or "3" to override auto-selection, or leave null.
+  var FORCE_CTA_VARIANT = null;
+
+  /* ============================================================
+     COPY / CONTENT CONFIG — all user-facing strings live here
+     ============================================================ */
+  var COPY = {
+    hook: {
+      headline: "Most capable leader in the room.",
+      sub: "Still waiting to be seen.",
+      body: "You've got 12+ years of experience. So why isn't it translating into your next leadership role?",
+      button: "Find Your #1 Leadership Leak (Free, Under 3 Minutes)"
+    },
+    intro: {
+      headline: "Find Your #1 Leadership Leak in Under 3 Minutes",
+      body: "Answer 9 quick questions for your personalized Leadership Capital Score — and the exact leak holding back your next promotion.",
+      button: "Start"
+    },
+    loading: {
+      text: "Calculating your Leadership Capital Score...",
+      subtext: "Comparing your answers against 75,000+ professionals who've taken this assessment."
+    },
+    leadgate: {
+      headline: "Your Leadership Capital Score is ready.",
+      body: "Enter your details to unlock your personalized score and your #1 leadership leak.",
+      button: "Reveal My Score"
+    },
+    personas: {
+      Visibility: {
+        persona: "The Invisible Achiever",
+        message: "Your biggest leak: Visibility. You're delivering top-tier results with bottom-tier visibility — decision-makers can't promote what they can't see.",
+        angle: "In the masterclass, you'll learn how to become visible to decision-makers without turning into a self-promoter."
+      },
+      Articulation: {
+        persona: "The Silent Expert",
+        message: "Your biggest leak: Articulation. You know your worth — the room doesn't, because you're not speaking its language yet.",
+        angle: "In the masterclass, you'll learn the exact language senior leaders use to get noticed — that no one ever taught you."
+      },
+      Positioning: {
+        persona: "The Capped Climber",
+        message: "Your biggest leak: Positioning. You're proven at your level — no one's built the case for you at the next one yet.",
+        angle: "In the masterclass, you'll learn why being great at your job is actually keeping you stuck, and the repositioning shift that fixes it."
+      },
+      Relevance: {
+        persona: "The AI-Era Worrier",
+        message: "Your biggest leak: Relevance. Your technical experience is being commoditized — your leadership capital is what protects you.",
+        angle: "In the masterclass, you'll learn the one career asset AI can't replace, and how to build it in 90 days."
+      }
+    },
+    ctaVariants: {
+      "1": function(leakName){
+        return "You've just identified your #1 leak: " + leakName + ". In the free Leadership Capital Masterclass, Rakesh Rana shows you the exact 90-day framework to close it. Reserve your seat — ₹99 (usually ₹999).";
+      },
+      "3": function(leakName){
+        return leakName + " doesn't fix itself with more experience — it fixes with the right system. Join Rakesh Rana live to learn the framework built for professionals exactly at your stage. Only 10 seats left.";
+      }
+    },
+    checkoutButton: "Reserve My Seat — ₹99"
+  };
+
+  /* ============================================================
+     QUESTIONS CONFIG
+     ============================================================ */
+  var QUESTIONS = [
+    {
+      key: "experience",
+      title: "How many years of professional experience do you have?",
+      type: "options",
+      options: [
+        { label: "Under 5", value: 0 },
+        { label: "5–10", value: 5 },
+        { label: "10–20", value: 10 },
+        { label: "20+", value: 15 }
+      ]
+    },
+    {
+      key: "profession",
+      title: "What is Your Current Profession?",
+      type: "options",
+      options: [
+        { label: "Senior Product Manager", value: "Senior Product Manager" },
+        { label: "Vice President", value: "Vice President" },
+        { label: "IT Head", value: "IT Head" },
+        { label: "Director", value: "Director" },
+        { label: "Marketing Manager", value: "Marketing Manager" },
+        { label: "Sales Manager", value: "Sales Manager" }
+      ]
+    },
+    {
+      key: "ctc",
+      title: "What is Your Current CTC?",
+      type: "options",
+      options: [
+        { label: "₹25 LPA – ₹40 LPA", value: "25-40 LPA" },
+        { label: "₹40 LPA – ₹60 LPA", value: "40-60 LPA" },
+        { label: "₹60 LPA – ₹1 CR", value: "60 LPA-1 CR" },
+        { label: "₹1 CR+", value: "1 CR+" }
+      ]
+    },
+    {
+      key: "situation",
+      title: "Which best describes where you are right now?",
+      type: "options",
+      options: [
+        { label: "Working hard but not getting recognized", value: "not_recognized" },
+        { label: "Stuck at the same level for years", value: "stuck" },
+        { label: "Doing well but unfulfilled", value: "unfulfilled" },
+        { label: "About to make a big move", value: "big_move" }
+      ]
+    },
+    {
+      key: "frustration",
+      title: "What frustrates you most about your career right now?",
+      type: "options",
+      options: [
+        { label: "I'm overlooked despite my results", value: "overlooked", leak: "Visibility" },
+        { label: "I don't know how to talk about my value", value: "cant_articulate", leak: "Articulation" },
+        { label: "I feel behind people with less experience than me", value: "behind", leak: "Positioning" },
+        { label: "I'm worried AI will make my role less relevant", value: "ai_worried", leak: "Relevance" }
+      ]
+    },
+    {
+      key: "confidence",
+      title: "On a scale of 1–10, how confident are you that decision-makers see your true value?",
+      type: "slider"
+    },
+    {
+      key: "desiredOutcome",
+      title: "What would change everything for you in the next 12 months?",
+      type: "options",
+      options: [
+        { label: "A promotion or bigger title", value: "promotion" },
+        { label: "A meaningful salary jump", value: "salary" },
+        { label: "Being seen as a go-to leader", value: "go_to_leader" },
+        { label: "A new role at a company that respects my experience", value: "new_role" }
+      ]
+    },
+    {
+      key: "obstacle",
+      title: "What's stopped you from making this shift already?",
+      type: "options",
+      options: [
+        { label: "No clear roadmap", value: "no_roadmap" },
+        { label: "No time to figure it out alone", value: "no_time" },
+        { label: "I've tried before and it didn't work", value: "tried_failed" },
+        { label: "Nothing — I just need the right push", value: "need_push" }
+      ]
+    },
+    {
+      key: "urgency",
+      title: "How soon do you want this to change?",
+      type: "options",
+      options: [
+        { label: "Immediately", value: "immediately", urgency: "high" },
+        { label: "Within a few months", value: "few_months", urgency: "high" },
+        { label: "Still exploring", value: "exploring", urgency: "low" },
+        { label: "Just curious for now", value: "curious", urgency: "low" }
+      ]
+    }
+  ];
+
+  /* ============================================================
+     STATE (in-memory only — refresh restarts the quiz)
+     ============================================================ */
+  var state = {
+    currentQuestion: 0,
+    answers: {},
+    urgency: "low",
+    leak: null,
+    score: null,
+    name: "",
+    whatsapp: "",
+    utm: {}
+  };
+
+  /* ============================================================
+     UTM / fbclid CAPTURE — preserved across screens + redirect + webhook
+     ============================================================ */
+  function captureUtmParams(){
+    var params = new URLSearchParams(window.location.search);
+    var keys = ["utm_source","utm_medium","utm_campaign","utm_term","utm_content","fbclid"];
+    keys.forEach(function(k){
+      var v = params.get(k);
+      if (v) state.utm[k] = v;
+    });
+  }
+
+  function appendUtmToUrl(url){
+    var hasQuery = url.indexOf("?") !== -1;
+    var qs = [];
+    Object.keys(state.utm).forEach(function(k){
+      qs.push(encodeURIComponent(k) + "=" + encodeURIComponent(state.utm[k]));
+    });
+    if (qs.length === 0) return url;
+    return url + (hasQuery ? "&" : "?") + qs.join("&");
+  }
+
+  /* ============================================================
+     SCREEN NAVIGATION
+     ============================================================ */
+  var screens = ["hook","intro","quiz","loading","leadgate","result"];
+  function showScreen(name){
+    screens.forEach(function(s){
+      var el = document.getElementById("screen-" + s);
+      if (!el) return;
+      if (s === name){
+        el.classList.add("active");
+      } else {
+        el.classList.remove("active");
+      }
+    });
+  }
+
+  /* ============================================================
+     RENDER STATIC COPY
+     ============================================================ */
+  function renderStaticCopy(){
+    document.getElementById("hook-headline").innerHTML = escapeHtml(COPY.hook.headline) + '<span class="sub">' + escapeHtml(COPY.hook.sub) + '</span>';
+    document.getElementById("hook-body").textContent = COPY.hook.body;
+    document.getElementById("btn-hook-start").textContent = COPY.hook.button;
+
+    document.getElementById("intro-headline").textContent = COPY.intro.headline;
+    document.getElementById("intro-body").textContent = COPY.intro.body;
+    document.getElementById("btn-intro-start").textContent = COPY.intro.button;
+
+    document.getElementById("loading-subtext").textContent = COPY.loading.subtext;
+
+    document.getElementById("leadgate-headline").textContent = COPY.leadgate.headline;
+    document.getElementById("leadgate-body").textContent = COPY.leadgate.body;
+    document.getElementById("btn-reveal-score").textContent = COPY.leadgate.button;
+  }
+
+  function escapeHtml(str){
+    var div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  /* ============================================================
+     QUIZ RENDERING
+     ============================================================ */
+  function renderQuestion(){
+    var q = QUESTIONS[state.currentQuestion];
+    var total = QUESTIONS.length;
+    var num = state.currentQuestion + 1;
+
+    document.getElementById("progress-fill").style.width = (num / total * 100) + "%";
+    document.getElementById("progress-label").textContent = "Question " + num + " of " + total;
+    document.getElementById("question-title").textContent = q.title;
+
+    var optionsWrap = document.getElementById("question-options");
+    var sliderWrap = document.getElementById("slider-wrap");
+
+    if (q.type === "slider"){
+      optionsWrap.classList.add("hidden");
+      sliderWrap.classList.remove("hidden");
+
+      var sliderInput = document.getElementById("slider-input");
+      var sliderValueEl = document.getElementById("slider-value");
+      var nextBtn = document.getElementById("btn-slider-next");
+
+      sliderInput.value = 5;
+      sliderValueEl.textContent = 5;
+      nextBtn.classList.add("hidden");
+
+      sliderInput.oninput = function(){
+        sliderValueEl.textContent = sliderInput.value;
+        nextBtn.classList.remove("hidden");
+      };
+      nextBtn.onclick = function(){
+        state.answers[q.key] = parseInt(sliderInput.value, 10);
+        goToNextQuestion();
+      };
+    } else {
+      sliderWrap.classList.add("hidden");
+      optionsWrap.classList.remove("hidden");
+      optionsWrap.innerHTML = "";
+
+      q.options.forEach(function(opt){
+        var btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.type = "button";
+        btn.textContent = opt.label;
+        btn.addEventListener("click", function(){
+          state.answers[q.key] = opt.value;
+          if (opt.leak) state.leak = opt.leak;
+          if (opt.urgency) state.urgency = opt.urgency;
+          btn.classList.add("selected");
+          setTimeout(goToNextQuestion, 180);
+        });
+        optionsWrap.appendChild(btn);
+      });
+    }
+  }
+
+  function goToNextQuestion(){
+    state.currentQuestion++;
+    if (state.currentQuestion >= QUESTIONS.length){
+      startLoadingSequence();
+    } else {
+      renderQuestion();
+    }
+  }
+
+  /* ============================================================
+     LOADING SEQUENCE
+     ============================================================ */
+  function startLoadingSequence(){
+    showScreen("loading");
+    var subtext = document.getElementById("loading-subtext");
+    var bar = document.getElementById("loading-bar-fill");
+    subtext.classList.remove("visible");
+    bar.style.width = "0%";
+
+    setTimeout(function(){ bar.style.width = "100%"; }, 50);
+    setTimeout(function(){ subtext.classList.add("visible"); }, 1000);
+    setTimeout(function(){
+      computeScoreAndPersona();
+      showScreen("leadgate");
+    }, 2800);
+  }
+
+  /* ============================================================
+     SCORE + PERSONA CALCULATION
+     ============================================================ */
+  function computeScoreAndPersona(){
+    var experiencePoints = state.answers.experience || 0;
+    var confidenceValue = state.answers.confidence || 5;
+    var raw = 35 + experiencePoints + (confidenceValue * 5);
+    var clamped = Math.max(40, Math.min(100, Math.round(raw)));
+    state.score = clamped;
+    if (!state.leak) state.leak = "Visibility"; // fallback safety, shouldn't trigger
+  }
+
+  /* ============================================================
+     LEAD CAPTURE VALIDATION + SUBMIT
+     ============================================================ */
+  function validateIndianMobile(value){
+    var cleaned = value.replace(/[\s-]/g, "");
+    return /^(\+91)?[6-9]\d{9}$/.test(cleaned);
+  }
+
+  function handleRevealScore(){
+    var nameInput = document.getElementById("input-name");
+    var whatsappInput = document.getElementById("input-whatsapp");
+    var nameError = document.getElementById("error-name");
+    var whatsappError = document.getElementById("error-whatsapp");
+
+    var name = nameInput.value.trim();
+    var whatsapp = whatsappInput.value.trim();
+
+    var valid = true;
+    if (!name){
+      nameError.classList.add("visible");
+      valid = false;
+    } else {
+      nameError.classList.remove("visible");
+    }
+
+    if (!validateIndianMobile(whatsapp)){
+      whatsappError.classList.add("visible");
+      valid = false;
+    } else {
+      whatsappError.classList.remove("visible");
+    }
+
+    if (!valid) return;
+
+    state.name = name;
+    state.whatsapp = whatsapp;
+
+    fireLeadEvent();
+    postToWebhook();
+    renderResult();
+    showScreen("result");
+  }
+
+  function fireLeadEvent(){
+    if (typeof fbq === "function" && PIXEL_ID && PIXEL_ID !== "YOUR_PIXEL_ID_HERE"){
+      fbq('track', 'Lead');
+    }
+  }
+
+  function postToWebhook(){
+    var payload = {
+      name: state.name,
+      whatsapp: state.whatsapp,
+      experience: state.answers.experience,
+      profession: state.answers.profession,
+      ctc: state.answers.ctc,
+      situation: state.answers.situation,
+      frustration: state.answers.frustration,
+      confidence: state.answers.confidence,
+      desiredOutcome: state.answers.desiredOutcome,
+      obstacle: state.answers.obstacle,
+      urgency: state.answers.urgency,
+      score: state.score,
+      persona: COPY.personas[state.leak].persona,
+      leak: state.leak,
+      utm_source: state.utm.utm_source || "",
+      utm_medium: state.utm.utm_medium || "",
+      utm_campaign: state.utm.utm_campaign || "",
+      utm_term: state.utm.utm_term || "",
+      utm_content: state.utm.utm_content || "",
+      fbclid: state.utm.fbclid || "",
+      timestamp: new Date().toISOString()
+    };
+
+    if (!WEBHOOK_URL || WEBHOOK_URL.indexOf("YOUR_WEBHOOK_ID_HERE") !== -1) return;
+
+    // Fire and forget — do not block UI on webhook response.
+    try {
+      fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        mode: "no-cors"
+      }).catch(function(){ /* silently ignore network errors */ });
+    } catch (e) { /* silently ignore */ }
+  }
+
+  /* ============================================================
+     RESULT RENDERING
+     ============================================================ */
+  function renderResult(){
+    var leak = state.leak;
+    var personaData = COPY.personas[leak];
+    var name = state.name;
+    var score = state.score;
+
+    document.getElementById("result-score").textContent = score;
+    document.getElementById("result-leak-tag").textContent = "LEAK: " + leak.toUpperCase();
+    document.getElementById("result-headline").textContent =
+      name + ", your Leadership Capital Score is " + score + "/100 — your #1 leak: " + leak;
+
+    document.getElementById("persona-message").textContent = personaData.message;
+    document.getElementById("persona-angle").textContent = personaData.angle;
+
+    var variant = FORCE_CTA_VARIANT || (state.urgency === "high" ? "3" : "1");
+    var ctaText = COPY.ctaVariants[variant](leak);
+    document.getElementById("cta-text").textContent = ctaText;
+
+    var checkoutBtn = document.getElementById("btn-checkout");
+    checkoutBtn.textContent = COPY.checkoutButton;
+  }
+
+  function handleCheckoutClick(){
+    if (typeof fbq === "function" && PIXEL_ID && PIXEL_ID !== "YOUR_PIXEL_ID_HERE"){
+      fbq('track', 'InitiateCheckout');
+    }
+    var finalUrl = appendUtmToUrl(CHECKOUT_URL);
+    window.location.href = finalUrl;
+  }
+
+  /* ============================================================
+     INIT
+     ============================================================ */
+  function init(){
+    captureUtmParams();
+    renderStaticCopy();
+
+    document.getElementById("btn-hook-start").addEventListener("click", function(){
+      showScreen("intro");
+    });
+
+    document.getElementById("btn-intro-start").addEventListener("click", function(){
+      state.currentQuestion = 0;
+      showScreen("quiz");
+      renderQuestion();
+    });
+
+    document.getElementById("btn-reveal-score").addEventListener("click", handleRevealScore);
+    document.getElementById("btn-checkout").addEventListener("click", handleCheckoutClick);
+
+    showScreen("hook");
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();
+</script>
+
+</body>
+</html>
