@@ -185,6 +185,8 @@
   .option-btn{
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 12px;
     width: 100%;
     text-align: left;
     padding: 18px 18px;
@@ -196,14 +198,52 @@
     font-weight: 600;
     font-family: inherit;
     cursor: pointer;
-    transition: border-color var(--transition), background var(--transition), transform 120ms ease;
+    transition: border-color 150ms ease-out, background 150ms ease-out, transform 150ms ease-out, opacity 150ms ease-out, color 150ms ease-out;
     min-height: 56px;
     -webkit-tap-highlight-color: transparent;
   }
   .option-btn:active{ transform: scale(0.98); }
   .option-btn.selected{
     border-color: var(--accent-gold);
-    background: rgba(201,169,97,0.08);
+    background: var(--accent-gold);
+    color: #14140f;
+    transform: scale(1.02);
+  }
+  .option-btn.dimmed{
+    opacity: 0.4;
+  }
+  .option-check{
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    opacity: 0;
+    transform: scale(0.4);
+    transition: opacity 150ms ease-out, transform 150ms ease-out;
+    font-weight: 800;
+    font-size: 15px;
+  }
+  .option-btn.selected .option-check{
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Per-question content — animated on question change */
+  .question-content{
+    transition: opacity 260ms ease, transform 260ms ease;
+  }
+  .question-content.q-exiting{
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  .question-content.q-entering{
+    animation: qSlideIn 280ms ease-out;
+  }
+  @keyframes qSlideIn{
+    from{ opacity: 0; transform: translateX(24px); }
+    to{ opacity: 1; transform: translateX(0); }
   }
 
   /* Progress bar */
@@ -248,6 +288,16 @@
     text-align: center;
     margin-bottom: 20px;
     line-height: 1;
+    display: inline-block;
+    width: 100%;
+  }
+  .slider-value.pulse{
+    animation: sliderPulse 220ms ease-out;
+  }
+  @keyframes sliderPulse{
+    0%{ transform: scale(1); }
+    40%{ transform: scale(1.14); }
+    100%{ transform: scale(1); }
   }
   input[type=range]{
     width: 100%;
@@ -257,6 +307,7 @@
     -webkit-appearance: none;
     appearance: none;
     outline: none;
+    transition: background 80ms linear;
   }
   input[type=range]::-webkit-slider-thumb{
     -webkit-appearance: none;
@@ -284,17 +335,32 @@
     margin-top: 10px;
   }
 
-  /* Loading screen */
-  .spinner{
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent-gold);
-    animation: spin 900ms linear infinite;
+  /* Loading screen — the score count-up is the hero moment of the whole funnel */
+  .loading-score-wrap{
     margin-bottom: 28px;
   }
-  @keyframes spin{ to{ transform: rotate(360deg); } }
+  .loading-score-num{
+    font-size: 72px;
+    font-weight: 800;
+    color: var(--accent-gold);
+    line-height: 1;
+  }
+  .loading-score-num.settle{
+    animation: scoreSettle 420ms ease-out;
+  }
+  @keyframes scoreSettle{
+    0%{ transform: scale(1); }
+    30%{ transform: scale(1.16); }
+    55%{ transform: scale(0.94); }
+    78%{ transform: scale(1.04); }
+    100%{ transform: scale(1); }
+  }
+  .loading-score-denom{
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    letter-spacing: 0.05em;
+  }
   .loading-text{
     font-size: 18px;
     font-weight: 700;
@@ -307,20 +373,6 @@
     transition: opacity 500ms ease;
   }
   .loading-subtext.visible{ opacity: 1; }
-  .loading-bar-track{
-    width: 100%;
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-top: 24px;
-  }
-  .loading-bar-fill{
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--accent-gold-dim), var(--accent-gold));
-    transition: width 2.7s linear;
-  }
 
   /* Form fields */
   .field{
@@ -502,6 +554,27 @@
     h1{ font-size: 26px; }
     .question-title{ font-size: 19px; }
   }
+
+  /* Respect reduced-motion: instant state changes, no scale/count-up/slide */
+  @media (prefers-reduced-motion: reduce){
+    .option-btn,
+    .option-check,
+    .question-content,
+    .slider-value,
+    .score-badge,
+    .loading-score-num,
+    .btn-cta,
+    .urgency-chip .dot{
+      transition: none !important;
+      animation: none !important;
+    }
+    .option-btn.selected{ transform: none; }
+    .question-content.q-exiting,
+    .question-content.q-entering{
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
 </style>
 </head>
 <body>
@@ -536,27 +609,31 @@
       <div class="progress-label" id="progress-label">Question 1 of 9</div>
     </div>
     <div class="quiz-body">
-      <div class="question-title" id="question-title"></div>
-      <div class="options" id="question-options"></div>
+      <div class="question-content" id="question-content">
+        <div class="question-title" id="question-title"></div>
+        <div class="options" id="question-options"></div>
 
-      <!-- slider question markup (shown only for Q6) -->
-      <div class="slider-wrap hidden" id="slider-wrap">
-        <div class="slider-value" id="slider-value">5</div>
-        <input type="range" min="1" max="10" value="5" id="slider-input">
-        <div class="slider-labels"><span>Not confident</span><span>Extremely confident</span></div>
-        <button class="btn btn-primary btn-block hidden" id="btn-slider-next">Next</button>
+        <!-- slider question markup (shown only for Q6) -->
+        <div class="slider-wrap hidden" id="slider-wrap">
+          <div class="slider-value" id="slider-value">5</div>
+          <input type="range" min="1" max="10" value="5" id="slider-input">
+          <div class="slider-labels"><span>Not confident</span><span>Extremely confident</span></div>
+          <button class="btn btn-primary btn-block hidden" id="btn-slider-next">Next</button>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- ============================================================
-       SCREEN 4 — LOADING
+       SCREEN 4 — LOADING (score count-up is the hero moment)
        ============================================================ -->
   <section class="screen screen-center" id="screen-loading">
-    <div class="spinner"></div>
+    <div class="loading-score-wrap">
+      <div class="loading-score-num" id="loading-score-num">0</div>
+      <div class="loading-score-denom">OUT OF 100</div>
+    </div>
     <div class="loading-text">Calculating your Leadership Capital Score...</div>
     <div class="loading-subtext" id="loading-subtext">Comparing your answers against 75,000+ professionals who've taken this assessment.</div>
-    <div class="loading-bar-track"><div class="loading-bar-fill" id="loading-bar-fill"></div></div>
   </section>
 
   <!-- ============================================================
@@ -792,6 +869,11 @@
   ];
 
   /* ============================================================
+     MOTION PREFERENCE — instant state changes when reduced motion is on
+     ============================================================ */
+  var prefersReducedMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  /* ============================================================
      STATE (in-memory only — refresh restarts the quiz)
      ============================================================ */
   var state = {
@@ -871,13 +953,22 @@
   /* ============================================================
      QUIZ RENDERING
      ============================================================ */
-  function renderQuestion(){
-    var q = QUESTIONS[state.currentQuestion];
+  function updateProgress(){
     var total = QUESTIONS.length;
     var num = state.currentQuestion + 1;
-
     document.getElementById("progress-fill").style.width = (num / total * 100) + "%";
     document.getElementById("progress-label").textContent = "Question " + num + " of " + total;
+  }
+
+  function updateSliderFill(sliderInput, value){
+    var pct = ((value - 1) / (10 - 1)) * 100;
+    sliderInput.style.background =
+      "linear-gradient(to right, var(--accent-gold) 0%, var(--accent-gold) " + pct +
+      "%, var(--border) " + pct + "%, var(--border) 100%)";
+  }
+
+  function renderQuestion(){
+    var q = QUESTIONS[state.currentQuestion];
     document.getElementById("question-title").textContent = q.title;
 
     var optionsWrap = document.getElementById("question-options");
@@ -893,10 +984,18 @@
 
       sliderInput.value = 5;
       sliderValueEl.textContent = 5;
+      updateSliderFill(sliderInput, 5);
       nextBtn.classList.add("hidden");
 
       sliderInput.oninput = function(){
-        sliderValueEl.textContent = sliderInput.value;
+        var val = sliderInput.value;
+        sliderValueEl.textContent = val;
+        updateSliderFill(sliderInput, val);
+        if (!prefersReducedMotion){
+          sliderValueEl.classList.remove("pulse");
+          void sliderValueEl.offsetWidth; // restart animation
+          sliderValueEl.classList.add("pulse");
+        }
         nextBtn.classList.remove("hidden");
       };
       nextBtn.onclick = function(){
@@ -912,13 +1011,39 @@
         var btn = document.createElement("button");
         btn.className = "option-btn";
         btn.type = "button";
-        btn.textContent = opt.label;
+
+        var label = document.createElement("span");
+        label.className = "option-label";
+        label.textContent = opt.label;
+
+        var check = document.createElement("span");
+        check.className = "option-check";
+        check.textContent = "✓";
+
+        btn.appendChild(label);
+        btn.appendChild(check);
+
         btn.addEventListener("click", function(){
+          if (btn.classList.contains("selected")) return; // ignore double-taps
+
           state.answers[q.key] = opt.value;
           if (opt.leak) state.leak = opt.leak;
           if (opt.urgency) state.urgency = opt.urgency;
-          btn.classList.add("selected");
-          setTimeout(goToNextQuestion, 180);
+
+          var allButtons = optionsWrap.querySelectorAll(".option-btn");
+          allButtons.forEach(function(other){
+            if (other === btn){
+              other.classList.add("selected");
+            } else {
+              other.classList.add("dimmed");
+            }
+          });
+
+          if (prefersReducedMotion){
+            goToNextQuestion();
+          } else {
+            setTimeout(goToNextQuestion, 400);
+          }
         });
         optionsWrap.appendChild(btn);
       });
@@ -927,29 +1052,67 @@
 
   function goToNextQuestion(){
     state.currentQuestion++;
+
     if (state.currentQuestion >= QUESTIONS.length){
-      startLoadingSequence();
-    } else {
-      renderQuestion();
+      computeScoreAndPersona();
+      showScreen("leadgate");
+      return;
     }
+
+    updateProgress(); // progress bar animates in sync with the question transition
+
+    var content = document.getElementById("question-content");
+
+    if (prefersReducedMotion){
+      renderQuestion();
+      return;
+    }
+
+    content.classList.add("q-exiting");
+    setTimeout(function(){
+      renderQuestion();
+      content.classList.remove("q-exiting");
+      content.classList.add("q-entering");
+      setTimeout(function(){ content.classList.remove("q-entering"); }, 300);
+    }, 260);
   }
 
   /* ============================================================
-     LOADING SEQUENCE
+     LOADING SEQUENCE — score count-up is the hero animation moment
      ============================================================ */
-  function startLoadingSequence(){
-    showScreen("loading");
+  function runLoadingCountUp(target, callback){
+    var numEl = document.getElementById("loading-score-num");
     var subtext = document.getElementById("loading-subtext");
-    var bar = document.getElementById("loading-bar-fill");
-    subtext.classList.remove("visible");
-    bar.style.width = "0%";
 
-    setTimeout(function(){ bar.style.width = "100%"; }, 50);
-    setTimeout(function(){ subtext.classList.add("visible"); }, 1000);
-    setTimeout(function(){
-      computeScoreAndPersona();
-      showScreen("leadgate");
-    }, 2800);
+    numEl.classList.remove("settle");
+    subtext.classList.remove("visible");
+
+    if (prefersReducedMotion){
+      numEl.textContent = target;
+      subtext.classList.add("visible");
+      setTimeout(callback, 250);
+      return;
+    }
+
+    numEl.textContent = "0";
+    setTimeout(function(){ subtext.classList.add("visible"); }, 700);
+
+    var duration = 1600;
+    var startTime = null;
+    function step(timestamp){
+      if (!startTime) startTime = timestamp;
+      var progress = Math.min((timestamp - startTime) / duration, 1);
+      var eased = 1 - Math.pow(1 - progress, 3);
+      numEl.textContent = Math.round(eased * target);
+      if (progress < 1){
+        requestAnimationFrame(step);
+      } else {
+        numEl.textContent = target;
+        numEl.classList.add("settle");
+        setTimeout(callback, 900); // hold on the finished number for a beat
+      }
+    }
+    requestAnimationFrame(step);
   }
 
   /* ============================================================
@@ -1003,8 +1166,12 @@
 
     fireLeadEvent();
     postToWebhook();
-    renderResult();
-    showScreen("result");
+
+    showScreen("loading");
+    runLoadingCountUp(state.score, function(){
+      renderResult();
+      showScreen("result");
+    });
   }
 
   function fireLeadEvent(){
@@ -1060,7 +1227,7 @@
     var name = state.name;
     var score = state.score;
 
-    animateScoreCountUp(score);
+    document.getElementById("result-score").textContent = score;
     document.getElementById("result-leak-tag").textContent = "LEAK: " + leak.toUpperCase();
     document.getElementById("result-headline").textContent =
       name + ", your Leadership Capital Score is " + score + "/100 — your #1 leak: " + leak;
@@ -1077,21 +1244,6 @@
 
     var checkoutBtn = document.getElementById("btn-checkout");
     checkoutBtn.textContent = COPY.checkoutButton;
-  }
-
-  function animateScoreCountUp(target){
-    var el = document.getElementById("result-score");
-    var start = 0;
-    var duration = 900;
-    var startTime = null;
-    function step(timestamp){
-      if (!startTime) startTime = timestamp;
-      var progress = Math.min((timestamp - startTime) / duration, 1);
-      var eased = 1 - Math.pow(1 - progress, 3);
-      el.textContent = Math.round(start + (target - start) * eased);
-      if (progress < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
   }
 
   function handleCheckoutClick(){
@@ -1116,6 +1268,7 @@
     document.getElementById("btn-intro-start").addEventListener("click", function(){
       state.currentQuestion = 0;
       showScreen("quiz");
+      updateProgress();
       renderQuestion();
     });
 
