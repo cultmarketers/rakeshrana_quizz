@@ -161,6 +161,20 @@
   }
   .btn-block{ margin-top: 28px; }
 
+  /* CTA button — deliberately louder than every other button on the page */
+  .btn-cta{
+    padding: 22px 20px;
+    font-size: 18px;
+    letter-spacing: 0.01em;
+    box-shadow: 0 0 0 0 rgba(201,169,97,0.55);
+    animation: ctaPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes ctaPulse{
+    0%{ box-shadow: 0 8px 24px rgba(201,169,97,0.25), 0 0 0 0 rgba(201,169,97,0.45); }
+    70%{ box-shadow: 0 8px 24px rgba(201,169,97,0.25), 0 0 0 14px rgba(201,169,97,0); }
+    100%{ box-shadow: 0 8px 24px rgba(201,169,97,0.25), 0 0 0 0 rgba(201,169,97,0); }
+  }
+
   /* Option buttons for quiz choices */
   .options{
     display: flex;
@@ -344,8 +358,8 @@
 
   /* Result screen */
   .score-badge{
-    width: 140px;
-    height: 140px;
+    width: 148px;
+    height: 148px;
     border-radius: 50%;
     background: var(--bg-card);
     border: 3px solid var(--accent-gold);
@@ -355,6 +369,11 @@
     justify-content: center;
     margin: 20px auto 24px;
     box-shadow: 0 0 0 8px rgba(201,169,97,0.06);
+    animation: scorePop 560ms cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes scorePop{
+    0%{ transform: scale(0.6); opacity: 0; }
+    100%{ transform: scale(1); opacity: 1; }
   }
   .score-badge .num{
     font-size: 40px;
@@ -420,6 +439,52 @@
     font-size: 15px;
     line-height: 1.6;
     color: var(--text-primary);
+    font-weight: 600;
+  }
+  .urgency-chip{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: rgba(217,115,115,0.12);
+    border: 1px solid rgba(217,115,115,0.4);
+    border-radius: 20px;
+    color: #e08a8a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .urgency-chip .dot{
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #e08a8a;
+    animation: dotBlink 1.2s ease-in-out infinite;
+  }
+  @keyframes dotBlink{
+    0%,100%{ opacity: 1; }
+    50%{ opacity: 0.25; }
+  }
+  .trust-bullets{
+    list-style: none;
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .trust-bullets li{
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .trust-bullets li::before{
+    content: "✓";
+    color: var(--success);
+    font-weight: 700;
   }
 
   .footer-note{
@@ -537,8 +602,14 @@
     </div>
 
     <div class="cta-card">
+      <div class="urgency-chip" id="cta-urgency-chip"><span class="dot"></span><span id="cta-urgency-text">Only 10 Seats Left</span></div>
       <div class="cta-text" id="cta-text"></div>
-      <button class="btn btn-primary btn-block" id="btn-checkout"></button>
+      <ul class="trust-bullets">
+        <li>Live with Rakesh Rana — not a recording</li>
+        <li>90-Day Leadership Capital Framework</li>
+        <li>Limited seats to keep it high-touch</li>
+      </ul>
+      <button class="btn btn-primary btn-cta btn-block" id="btn-checkout"></button>
     </div>
 
     <div class="footer-note">Limited seats per session — hosted live by Rakesh Rana.</div>
@@ -589,7 +660,7 @@
       Visibility: {
         persona: "The Invisible Achiever",
         message: "Your biggest leak: Visibility. You're delivering top-tier results with bottom-tier visibility — decision-makers can't promote what they can't see.",
-        angle: "In the masterclass, you'll learn how to become visible to decision-makers without turning into a self-promoter."
+        angle: "In the masterclass, you'll learn how to Turn Your Experience Into Your Next Leadership Role in 90 Days, Using the Leadership Capital Framework."
       },
       Articulation: {
         persona: "The Silent Expert",
@@ -643,7 +714,8 @@
         { label: "IT Head", value: "IT Head" },
         { label: "Director", value: "Director" },
         { label: "Marketing Manager", value: "Marketing Manager" },
-        { label: "Sales Manager", value: "Sales Manager" }
+        { label: "Sales Manager", value: "Sales Manager" },
+        { label: "Others", value: "Others" }
       ]
     },
     {
@@ -689,7 +761,7 @@
       title: "What would change everything for you in the next 12 months?",
       type: "options",
       options: [
-        { label: "A promotion or bigger title", value: "promotion" },
+        { label: "High Leadership Role", value: "high_leadership_role" },
         { label: "A meaningful salary jump", value: "salary" },
         { label: "Being seen as a go-to leader", value: "go_to_leader" },
         { label: "A new role at a company that respects my experience", value: "new_role" }
@@ -988,7 +1060,7 @@
     var name = state.name;
     var score = state.score;
 
-    document.getElementById("result-score").textContent = score;
+    animateScoreCountUp(score);
     document.getElementById("result-leak-tag").textContent = "LEAK: " + leak.toUpperCase();
     document.getElementById("result-headline").textContent =
       name + ", your Leadership Capital Score is " + score + "/100 — your #1 leak: " + leak;
@@ -1000,8 +1072,26 @@
     var ctaText = COPY.ctaVariants[variant](leak);
     document.getElementById("cta-text").textContent = ctaText;
 
+    document.getElementById("cta-urgency-text").textContent =
+      state.urgency === "high" ? "Only 10 Seats Left — Closing Soon" : "Only 10 Seats Left";
+
     var checkoutBtn = document.getElementById("btn-checkout");
     checkoutBtn.textContent = COPY.checkoutButton;
+  }
+
+  function animateScoreCountUp(target){
+    var el = document.getElementById("result-score");
+    var start = 0;
+    var duration = 900;
+    var startTime = null;
+    function step(timestamp){
+      if (!startTime) startTime = timestamp;
+      var progress = Math.min((timestamp - startTime) / duration, 1);
+      var eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(start + (target - start) * eased);
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
   }
 
   function handleCheckoutClick(){
